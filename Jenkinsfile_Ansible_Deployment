@@ -11,36 +11,31 @@ pipeline {
     string(name: 'docker_repo', description: "Name of docker repository")
   }
       
-    stages{
-        stage('Git Checkout'){
-                    when { expression {  params.action == 'create' } }
-            steps{
-            gitCheckout(
-                branch: "main",
-                url: "https://github.com/jai-se/spring-cloud-kubernetes-new.git"
-            )
+  tools{ 
+        maven 'maven3'
+    }
+    stages {
+        stage('Git Checkout') {
+            when {
+				expression { params.action == 'create' }
+			}
+            steps {
+                gitCheckout(
+                    branch: "main",
+                    url: "https://github.com/jai-se/spring-cloud-kubernetes-new.git"
+                )
             }
         }
-         stage('Unit Test maven'){
-         
-         when { expression {  params.action == 'create' } }
-
-            steps{
-               script{
-                   
-                   mvnTest()
-               }
-            }
-        }
-         stage('Integration Test maven'){
-         when { expression {  params.action == 'create' } }
-            steps{
-               script{
-                   
-                   mvnIntegrationTest()
-               }
-            }
-        }
+        stage('Build Maven'){
+            when {
+				expression { params.action == 'create' }
+			}
+    		steps {
+        		dir("${params.AppName}") {
+        			sh 'mvn clean package'
+        		}
+    		}
+	    }
 	    stage("Docker Build and Push") {
 	        when {
 				expression { params.action == 'create' }
