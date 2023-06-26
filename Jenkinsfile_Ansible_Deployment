@@ -10,10 +10,7 @@ pipeline {
 	string(name: 'AppName', description: "Name of the Application")
     string(name: 'docker_repo', description: "Name of docker repository")
   }
-      
-  tools{ 
-        maven 'maven3'
-    }
+     
     stages {
         stage('Git Checkout') {
             when {

@@ -11,9 +11,6 @@ pipeline {
     string(name: 'docker_repo', description: "Name of docker repository",defaultValue: "jaik77")
   }
       
-  tools{ 
-        maven 'maven3'
-    }
     stages {
         stage('Git Checkout') {
             when {
