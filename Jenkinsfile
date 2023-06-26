@@ -1,4 +1,4 @@
-@Library('main-shared-library') _
+@Library('jenkins-shared-library@main') _
 pipeline {
 
   agent any
@@ -8,22 +8,21 @@ pipeline {
     string(name: 'ImageName', description: "Name of the docker build", defaultValue: "kubernetes-configmap-reload")
 	string(name: 'ImageTag', description: "Name of the docker build",defaultValue: "v1")
 	string(name: 'AppName', description: "Name of the Application",defaultValue: "kubernetes-configmap-reload")
-    string(name: 'docker_repo', description: "Name of docker repository",defaultValue: "jaik77")
+    string(name: 'docker_repo', description: "Name of docker repository",defaultValue: "praveensingam1994")
   }
       
-    stages {
-        stage('Git Checkout') {
-            when {
-				expression { params.action == 'create' }
-			}
-            steps {
-                gitCheckout(
-                    branch: "main",
-                    url: "https://github.com/jai-se/spring-cloud-kubernetes-new.git"
-                )
+	stages{
+         
+        stage('Git Checkout'){
+                    when { expression {  params.action == 'create' } }
+            steps{
+            gitCheckout(
+                branch: "main",
+                url: "https://github.com/jai-se/spring-cloud-kubernetes-new.git"
+            )
             }
         }
-		stage('Unit Test maven'){
+         stage('Unit Test maven'){
          
          when { expression {  params.action == 'create' } }
 
@@ -43,7 +42,7 @@ pipeline {
                }
             }
         }
-        stage("Docker Build and Push") {
+	    stage("Docker Build and Push") {
 	        when {
 				expression { params.action == 'create' }
 			}
