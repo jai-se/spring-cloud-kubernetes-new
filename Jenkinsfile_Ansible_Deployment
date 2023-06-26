@@ -11,8 +11,7 @@ pipeline {
     string(name: 'docker_repo', description: "Name of docker repository")
   }
       
-  stages{
-         
+    stages{
         stage('Git Checkout'){
                     when { expression {  params.action == 'create' } }
             steps{
