@@ -1,7 +1,6 @@
 @Library('main-shared-library') _
 
 pipeline {
-
   agent any
 
   parameters {
@@ -25,26 +24,27 @@ pipeline {
       }
     }
 
-    stage('Unit Test maven'){
-         
-         when { expression {  params.action == 'create' } }
+    stage('Unit Test maven') {
+      when {
+        expression { params.action == 'create' }
+      }
+      steps {
+        script {
+          mvnTest()
+        }
+      }
+    }
 
-            steps{
-               script{
-                   
-                   mvnTest()
-               }
-            }
+    stage('Integration Test maven') {
+      when {
+        expression { params.action == 'create' }
+      }
+      steps {
+        script {
+          mvnIntegrationTest()
         }
-         stage('Integration Test maven'){
-         when { expression {  params.action == 'create' } }
-            steps{
-               script{
-                   
-                   mvnIntegrationTest()
-               }
-            }
-        }
+      }
+    }
 
     stage("Docker Build and Push") {
       when {
