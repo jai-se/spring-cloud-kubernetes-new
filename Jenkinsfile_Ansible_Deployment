@@ -57,12 +57,10 @@ pipeline {
 			}
 	        steps {
 	            dir("${params.AppName}") {
-	                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
-	                        accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
-	                        credentialsId: 'AWS_Credentials', 
-	                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-	                    withCredentials([kubeconfigContent(credentialsId: 'kubernetes_config', 
-	                        variable: 'KUBECONFIG')]) {
+	                withCredentials([
+						kubeconfigContent(credentialsId: 'kubernetes_config', 
+                      variable: 'KUBECONFIG')
+					]) {
 	                        sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'  
                             sh 'chmod u+x ./kubectl'  
 	                        sh 'kubectl create -f kubernetes-configmap.yml'
@@ -76,12 +74,10 @@ pipeline {
 				expression { params.action == 'rollback' }
 			}
 	        steps {
-	           withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
-	                        accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
-	                        credentialsId: 'AWS_Credentials', 
-	                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-	               withCredentials([kubeconfigContent(credentialsId: 'kubernetes_config', 
-	                        variable: 'KUBECONFIG')]) {
+	           withCredentials([
+						kubeconfigContent(credentialsId: 'kubernetes_config', 
+                      variable: 'KUBECONFIG')
+					]) {
 	               sh """
 	                    kubectl delete deploy ${params.AppName}
 					    kubectl delete svc ${params.AppName}
