@@ -25,18 +25,26 @@ pipeline {
       }
     }
 
-    stage('Build Maven') {
-      when {
-        expression { params.action == 'create' }
-      }
-      steps {
-        dir("${params.AppName}") {
-          withMaven(maven: 'maven') {
-            sh 'mvn clean package'
-          }
+    stage('Unit Test maven'){
+         
+         when { expression {  params.action == 'create' } }
+
+            steps{
+               script{
+                   
+                   mvnTest()
+               }
+            }
         }
-      }
-    }
+         stage('Integration Test maven'){
+         when { expression {  params.action == 'create' } }
+            steps{
+               script{
+                   
+                   mvnIntegrationTest()
+               }
+            }
+        }
 
     stage("Docker Build and Push") {
       when {
