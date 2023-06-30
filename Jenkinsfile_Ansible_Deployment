@@ -58,8 +58,7 @@ pipeline {
 	        steps {
 	            dir("${params.AppName}") {
 	                withCredentials([
-						kubeconfigContent(credentialsId: 'kubernetes_config', 
-                      variable: 'api_token')
+						kubeconfigContent(credentialsId: 'kubernetes_config', variable: 'api_token')
 					]) {
 	                        sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'  
                             sh 'chmod u+x ./kubectl'  
