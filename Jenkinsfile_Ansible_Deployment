@@ -59,11 +59,11 @@ pipeline {
 	            dir("${params.AppName}") {
 	                withCredentials([
 						kubeconfigContent(credentialsId: 'kubernetes_config', 
-                      variable: 'KUBECONFIG')
+                      variable: 'api_token')
 					]) {
 	                        sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'  
                             sh 'chmod u+x ./kubectl'  
-	                        sh 'kubectl create -f kubernetes-configmap.yml'
+	                        sh 'kubectl $api_token --server https://192.168.49.2:8443 --insecure-skip-tls-verify=true create -f kubernetes-configmap.yml'
 	                    }
 	                }
 	            }
