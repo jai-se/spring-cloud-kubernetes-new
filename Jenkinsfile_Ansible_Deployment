@@ -52,34 +52,34 @@ pipeline {
 			}
 		}
 	    stage("Create deployment") {
-    when {
-        expression { params.action == 'create' }
-    }
-    steps {
-        dir("${params.AppName}") {
-            environment {
-			     KUBE_CREDS = credentials('jenkins') {
-                sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'
-                sh 'chmod u+x ./kubectl'
-                sh "kubectl create --username=${KUBE_CREDS} --password=${KUBE_CREDS} -f kubernetes-configmap.yml"
-            }
-        }
-    }
-}
+			when {
+				expression { params.action == 'create' }
+			}
+			steps {
+				dir("${params.AppName}") {
+					environment {
+						KUBE_CREDS = credentials(credentialsId: 'jenkins') {
+						sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'
+						sh 'chmod u+x ./kubectl'
+						sh "kubectl create --username=${KUBE_CREDS} --password=${KUBE_CREDS} -f kubernetes-configmap.yml"
+					}	
+				}
+			}
+		}
 
-stage("Rollback deployment") {
-    when {
-        expression { params.action == 'rollback' }
-    }
-    steps {
-        dir("${params.AppName}") {
-            KUBE_CREDS = credentials('jenkins') {
-                sh """
-                    kubectl delete deploy ${params.AppName}
-                    kubectl delete svc ${params.AppName}
-                """
-            }
-        }
-    }
-}
+		stage("Rollback deployment") {
+			when {
+				expression { params.action == 'rollback' }
+			}
+			steps {
+				dir("${params.AppName}") {
+					KUBE_CREDS = credentials('jenkins') {
+						sh """
+							kubectl delete deploy ${params.AppName}
+							kubectl delete svc ${params.AppName}
+						"""
+					}
+				}
+			}
+		}
 
