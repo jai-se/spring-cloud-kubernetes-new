@@ -61,7 +61,7 @@ pipeline {
 			     KUBE_CREDS = credentials('jenkins') {
                 sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'
                 sh 'chmod u+x ./kubectl'
-                sh "kubectl create --username=${KUBE_CREDS_USER} --password=${KUBE_CREDS_PSW} -f kubernetes-configmap.yml"
+                sh "kubectl create --username=${KUBE_CREDS} --password=${KUBE_CREDS} -f kubernetes-configmap.yml"
             }
         }
     }
