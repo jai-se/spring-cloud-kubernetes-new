@@ -51,21 +51,24 @@ pipeline {
 	            dockerCleanup ( "${params.ImageName}", "${params.docker_repo}" )
 			}
 		}
-	    stage("Create deployment") {
+		stage("Create deployment") {
 			when {
 				expression { params.action == 'create' }
-			}
+		}
 			steps {
 				dir("${params.AppName}") {
-					environment {
-						KUBE_CREDS = credentials(credentialsId: 'jenkins') {
-						sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'
-						sh 'chmod u+x ./kubectl'
-						sh 'kubectl create --username=${jenkins} --password=${KUBE_CREDS} -f kubernetes-configmap.yml'
-					}	
-				}
-			}
-		}
+					script {
+						def kubeCreds = credentials('jenkins')
+						withCredentials([kubeCreds]) {
+							sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.26.3/bin/linux/amd64/kubectl"'
+							sh 'chmod u+x ./kubectl'
+							sh "kubectl create --username=${kubeCreds.username} --password=${kubeCreds.password} -f kubernetes-configmap.yml"
+                }
+            }
+        }
+    }
+}
+
 
 		stage("Rollback deployment") {
 			when {
