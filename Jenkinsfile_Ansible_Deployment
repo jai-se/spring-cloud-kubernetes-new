@@ -52,39 +52,33 @@ pipeline {
 			}
 		}
 	    stage("Create deployment") {
-			when {
-				expression { params.action == 'create' }
-			}
-	        steps {
-	            dir("${params.AppName}") {
-	                withCredentials([
-						withCredentials([kubeconfigContent(credentialsId: 'jenkins', 
-	                        variable: 'KUBECONFIG')
-					]) {
-	                        sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'  
-                            sh 'chmod u+x ./kubectl'  
-	                        sh 'kubectl create -f kubernetes-configmap.yml'
-	                    }
-	                }
-	            }
-	        }
-	    }
-		stage("rollback deployment") {
-			when {
-				expression { params.action == 'rollback' }
-			}
-	        steps {
-	           withCredentials([
-						([kubeconfigContent(credentialsId: 'jenkins', 
-	                        variable: 'KUBECONFIG')
-					]) {
-	               sh """
-	                    kubectl delete deploy ${params.AppName}
-					    kubectl delete svc ${params.AppName}
-				   """
-	               }
-	            }
-	        }
-	    }
+    when {
+        expression { params.action == 'create' }
+    }
+    steps {
+        dir("${params.AppName}") {
+            withEnv(["KUBECONFIG=${kubeconfigContent(credentialsId: 'jenkins')}"]) {
+                sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'
+                sh 'chmod u+x ./kubectl'
+                sh 'kubectl create -f kubernetes-configmap.yml'
+            }
+        }
     }
 }
+
+stage("Rollback deployment") {
+    when {
+        expression { params.action == 'rollback' }
+    }
+    steps {
+        dir("${params.AppName}") {
+            withEnv(["KUBECONFIG=${kubeconfigContent(credentialsId: 'jenkins')}"]) {
+                sh """
+                    kubectl delete deploy ${params.AppName}
+                    kubectl delete svc ${params.AppName}
+                """
+            }
+        }
+    }
+}
+
