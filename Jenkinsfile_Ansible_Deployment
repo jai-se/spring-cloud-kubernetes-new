@@ -59,7 +59,7 @@ pipeline {
 	            dir("${params.AppName}") {
 	                withCredentials([
 						withCredentials([kubeconfigContent(credentialsId: 'jenkins', 
-	                        variable: 'KUBECONFIG')
+	                        variable: 'api_token')
 					]) {
 	                        sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'  
                             sh 'chmod u+x ./kubectl'  
@@ -76,7 +76,7 @@ pipeline {
 	        steps {
 	           withCredentials([
 						([kubeconfigContent(credentialsId: 'jenkins', 
-	                        variable: 'KUBECONFIG')
+	                        variable: 'api_token')
 					]) {
 	               sh """
 	                    kubectl delete deploy ${params.AppName}
