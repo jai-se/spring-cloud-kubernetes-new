@@ -1,4 +1,4 @@
-@Library('main-shared-library') _
+@Library('jenkins-shared-library@main') _
 pipeline {
 
   agent any
@@ -10,7 +10,10 @@ pipeline {
 	string(name: 'AppName', description: "Name of the Application")
     string(name: 'docker_repo', description: "Name of docker repository")
   }
-  
+      
+  tools{ 
+        maven 'maven3'
+    }
     stages {
         stage('Git Checkout') {
             when {
@@ -19,7 +22,7 @@ pipeline {
             steps {
                 gitCheckout(
                     branch: "main",
-                    url: "https://github.com/jai-se/spring-cloud-kubernetes.git"
+                    url: "https://github.com/praveen1994dec/spring-cloud-kubernetes.git"
                 )
             }
         }
@@ -51,38 +54,43 @@ pipeline {
 	            dockerCleanup ( "${params.ImageName}", "${params.docker_repo}" )
 			}
 		}
-		stage("Create deployment") {
+	    stage("Create deployment") {
 			when {
 				expression { params.action == 'create' }
+				anyof {
+					environment name: 'KUBE_USER', value: 'jenkins'
+					environment name: 'KUBE_PASS', value: (credentialsId: 'jenkins')
+			}
 		}
-			steps {
-				dir("${params.AppName}") {
-					script {
-						def kubeCreds = credentials('jenkins')
-						withCredentials([kubeCreds]) {
-							sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.26.3/bin/linux/amd64/kubectl"'
-							sh 'chmod u+x ./kubectl'
-							sh "kubectl create --username=${kubeCreds.username} --password=${kubeCreds.password} -f kubernetes-configmap.yml"
-                }
-            }
-        }
-    }
-}
+	        steps {
+	            dir("${params.AppName}") {
+	                sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'  
+                    sh 'chmod u+x ./kubectl'  
+	                sh "kubectl create --username=${KUBE_USER} --password=${KUBE_PASS} -f kubernetes-configmap.yml"
 
-
-		stage("Rollback deployment") {
+	                    }
+	                }
+	            }
+	        }
+	    }
+		stage("rollback deployment") {
 			when {
 				expression { params.action == 'rollback' }
 			}
-			steps {
-				dir("${params.AppName}") {
-					KUBE_CREDS = credentials('jenkins') {
-						sh """
-							kubectl delete deploy ${params.AppName}
-							kubectl delete svc ${params.AppName}
-						"""
-					}
-				}
-			}
-		}
-
+	        steps {
+	           withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
+	                        accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
+	                        credentialsId: 'AWS_Credentials', 
+	                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+	               withCredentials([kubeconfigContent(credentialsId: 'kubernetes_config', 
+	                        variable: 'KUBECONFIG')]) {
+	               sh """
+	                    kubectl delete deploy ${params.AppName}
+					    kubectl delete svc ${params.AppName}
+				   """
+	               }
+	            }
+	        }
+	    }
+    }
+}
