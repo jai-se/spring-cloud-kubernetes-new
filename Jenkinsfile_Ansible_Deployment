@@ -58,8 +58,8 @@ pipeline {
 			when {
 				expression { params.action == 'create' }
 				anyof {
-					environment name: 'KUBE_USER', value: 'jenkins'
-					environment name: 'KUBE_PASS', value: (credentialsId: 'jenkins')
+					environment name: 'KUBE_USER', value: 'jai'
+					environment name: 'KUBE_PASS', value: ('W1nd0ws@123')
 			}
 		}
 	        steps {
