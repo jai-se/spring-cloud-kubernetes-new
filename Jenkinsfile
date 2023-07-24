@@ -56,7 +56,7 @@ pipeline {
 				expression { params.action == 'create' }
 			}
 	        steps {
-	            sh 'ansible-playbook ${WORKSPACE}/kubernetes-configmap-reload-new/server_setup.yml'
+	            sh 'ansible-playbook ${WORKSPACE}/kubernetes-configmap-reload/server_setup.yml'
 			}
 		}
 	    stage("Create deployment") {
@@ -65,7 +65,7 @@ pipeline {
 			}
 	        steps {
 	            sh 'echo ${WORKSPACE}'
-	            sh 'kubectl create -f ${WORKSPACE}/kubernetes-configmap-reload-new/kubernetes-configmap.yml'
+	            sh 'kubectl create -f ${WORKSPACE}/kubernetes-configmap-reload/kubernetes-configmap.yml'
 	        }
 	    }
 	    stage ("wait_for_pods"){
