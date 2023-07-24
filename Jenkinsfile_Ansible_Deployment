@@ -5,10 +5,10 @@ pipeline {
   
   parameters {
 	choice(name: 'action', choices: 'create\nrollback', description: 'Create/rollback of the deployment')
-    string(name: 'ImageName', description: "Name of the docker build")
-	string(name: 'ImageTag', description: "Name of the docker build")
-	string(name: 'AppName', description: "Name of the Application")
-    string(name: 'docker_repo', description: "Name of docker repository")
+    string(name: 'ImageName', description: "Name of the docker build", defaultValue: "kubernetes-configmap-reload-new")
+	string(name: 'ImageTag', description: "Name of the docker build", defaultValue: "v1")
+	string(name: 'AppName', description: "Name of the Application", defaultValue: "kubernetes-configmap-reload-new")
+    string(name: 'docker_repo', description: "Name of docker repository", defaultValue: "jaik77" )
   }
       
   tools{ 
@@ -22,7 +22,7 @@ pipeline {
             steps {
                 gitCheckout(
                     branch: "main",
-                    url: "https://github.com/praveen1994dec/spring-cloud-kubernetes.git"
+                    url: "https://github.com/jai-se/spring-cloud-kubernetes-new.git"
                 )
             }
         }
@@ -57,18 +57,15 @@ pipeline {
 	    stage("Create deployment") {
 			when {
 				expression { params.action == 'create' }
-				anyof {
-					environment name: 'KUBE_USER', value: 'root'
-					environment name: 'KUBE_PASS', value: ('W1nd0ws@123')
 			}
-		}
 	        steps {
 	            dir("${params.AppName}") {
+					withCredentials([
+						string(credentialsId: 'jenkins', variable: 'api_token')
+						]){
 	                sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'  
                     sh 'chmod u+x ./kubectl'  
-	                sh "kubectl create --username=${KUBE_USER} --password=${KUBE_PASS} -f kubernetes-configmap.yml"
-
-	                    }
+	                sh "kubectl --token $api_token --server https://192.168.49.2:8443 --insecure-skip-tls-verify=true apply -f kubernetes-configmap.yml"
 	                }
 	            }
 	        }
@@ -78,19 +75,13 @@ pipeline {
 				expression { params.action == 'rollback' }
 			}
 	        steps {
-	           withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
-	                        accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
-	                        credentialsId: 'AWS_Credentials', 
-	                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-	               withCredentials([kubeconfigContent(credentialsId: 'kubernetes_config', 
-	                        variable: 'KUBECONFIG')]) {
+	           withCredentials([
+						string(credentialsId: 'jenkins', variable: 'api_token')
+						]){
 	               sh """
 	                    kubectl delete deploy ${params.AppName}
 					    kubectl delete svc ${params.AppName}
 				   """
-	               }
-	            }
-	        }
 	    }
     }
 }

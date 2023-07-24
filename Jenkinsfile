@@ -5,9 +5,9 @@ pipeline {
   
   parameters {
 	choice(name: 'action', choices: 'create\nrollback', description: 'Create/rollback of the deployment')
-    string(name: 'ImageName', description: "Name of the docker build", defaultValue: "kubernetes-configmap-reload")
+    string(name: 'ImageName', description: "Name of the docker build", defaultValue: "kubernetes-configmap-reload-new")
 	string(name: 'ImageTag', description: "Name of the docker build",defaultValue: "v1")
-	string(name: 'AppName', description: "Name of the Application",defaultValue: "kubernetes-configmap-reload")
+	string(name: 'AppName', description: "Name of the Application",defaultValue: "kubernetes-configmap-reload-new")
     string(name: 'docker_repo', description: "Name of docker repository",defaultValue: "jaik77")
   }
   
@@ -19,7 +19,7 @@ pipeline {
             steps {
                 gitCheckout(
                     branch: "main",
-                    url: "https://github.com/jai-se/spring-cloud-kubernetes.git"
+                    url: "https://github.com/jai-se/spring-cloud-kubernetes-new.git"
                 )
             }
         }
@@ -56,7 +56,7 @@ pipeline {
 				expression { params.action == 'create' }
 			}
 	        steps {
-	            sh 'ansible-playbook ${WORKSPACE}/kubernetes-configmap-reload/server_setup.yml'
+	            sh 'ansible-playbook ${WORKSPACE}/kubernetes-configmap-reload-new/server_setup.yml'
 			}
 		}
 	    stage("Create deployment") {
@@ -65,7 +65,7 @@ pipeline {
 			}
 	        steps {
 	            sh 'echo ${WORKSPACE}'
-	            sh 'kubectl create -f ${WORKSPACE}/kubernetes-configmap-reload/kubernetes-configmap.yml'
+	            sh 'kubectl create -f ${WORKSPACE}/kubernetes-configmap-reload-new/kubernetes-configmap.yml'
 	        }
 	    }
 	    stage ("wait_for_pods"){
